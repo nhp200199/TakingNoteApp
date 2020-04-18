@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public class NoteActivity extends AppCompatActivity {
     private int mNotePosition;
     private boolean mIsCancelling;
     private NoteActivityViewModel mViewModel;
+    private int mNotePosittion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +72,7 @@ public class NoteActivity extends AppCompatActivity {
         mViewModel.mOriginalNoteTitle = mNote.getTitle();
         mViewModel.mOriginalNoteText = mNote.getText();
 
+
     }
 
     @Override
@@ -89,7 +92,6 @@ public class NoteActivity extends AppCompatActivity {
                 finish();
                 return true;
 
-
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -106,23 +108,18 @@ public class NoteActivity extends AppCompatActivity {
 
     private void readDisplayStateValues() {
         Intent intent = getIntent();
-        int posittion = intent.getIntExtra(NoteActivity.NOTE_POSITION, POSITION_NOT_SET);
-        mIsNewNote = posittion ==POSITION_NOT_SET;
+        mNotePosittion = intent.getIntExtra(NoteActivity.NOTE_POSITION, POSITION_NOT_SET);
+        mIsNewNote = mNotePosittion ==POSITION_NOT_SET;
         if(mIsNewNote){
             createNewNote();
         }
-        else{
-            mNote = DataManager.getInstance().getNotes().get(posittion);
-        }
 
-
-
+        mNote = DataManager.getInstance().getNotes().get(mNotePosittion);
     }
 
     private void createNewNote() {
         DataManager dm = DataManager.getInstance();
         mNotePosition = dm.createNewNote();
-        mNote = dm.getNotes().get(mNotePosition);
     }
 
     private void sendMail() {

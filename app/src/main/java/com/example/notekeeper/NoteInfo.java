@@ -91,5 +91,6 @@ public final class NoteInfo implements Parcelable{
                 public NoteInfo[] newArray(int size) {
                     return new NoteInfo[size];
                 }
+
             };
 }

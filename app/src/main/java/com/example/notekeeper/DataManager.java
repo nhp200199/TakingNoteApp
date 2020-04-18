@@ -84,7 +84,7 @@ public class DataManager {
 
     //region Initialization code
 
-    private void initializeCourses() {
+    private void  initializeCourses() {
         mCourses.add(initializeCourse1());
         mCourses.add(initializeCourse2());
         mCourses.add(initializeCourse3());
