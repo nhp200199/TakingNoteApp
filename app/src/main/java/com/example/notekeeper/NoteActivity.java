@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -27,7 +28,6 @@ public class NoteActivity extends AppCompatActivity {
     private int mNotePosition;
     private boolean mIsCancelling;
     private NoteActivityViewModel mViewModel;
-    private int mNotePosittion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,14 +71,21 @@ public class NoteActivity extends AppCompatActivity {
         mViewModel.mOriginalNoteCourseId = mNote.getCourse().getCourseId();
         mViewModel.mOriginalNoteTitle = mNote.getTitle();
         mViewModel.mOriginalNoteText = mNote.getText();
-
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_note, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_next);
+        int lastIndex = DataManager.getInstance().getNotes().size() - 1;
+        item.setEnabled(mNotePosition < lastIndex);
+        return super.onPrepareOptionsMenu(menu);
+
     }
 
     @Override
@@ -90,12 +97,25 @@ public class NoteActivity extends AppCompatActivity {
             case R.id.action_cancel:
                 mIsCancelling = true;
                 finish();
+            case R.id.action_next:
+                moveNext();
                 return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
 
+    }
+
+    private void moveNext() {
+        saveNote();
+
+        ++mNotePosition;
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
+
+        saveOriginalNoteValues();
+        displayNote(mSpCourses, mEdtNoteTitle, mEdtNoteText);
+        invalidateOptionsMenu();
     }
 
     private void displayNote(Spinner spCourses, EditText edtNoteTitle, EditText edtNoteText) {
@@ -108,13 +128,13 @@ public class NoteActivity extends AppCompatActivity {
 
     private void readDisplayStateValues() {
         Intent intent = getIntent();
-        mNotePosittion = intent.getIntExtra(NoteActivity.NOTE_POSITION, POSITION_NOT_SET);
-        mIsNewNote = mNotePosittion ==POSITION_NOT_SET;
+        mNotePosition = intent.getIntExtra(NoteActivity.NOTE_POSITION, POSITION_NOT_SET);
+        mIsNewNote = mNotePosition ==POSITION_NOT_SET;
         if(mIsNewNote){
             createNewNote();
         }
 
-        mNote = DataManager.getInstance().getNotes().get(mNotePosittion);
+        mNote = DataManager.getInstance().getNotes().get(mNotePosition);
     }
 
     private void createNewNote() {
