@@ -54,16 +54,6 @@ public class NoteListAcitivity extends AppCompatActivity {
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
         mAdapter = new NoteRecyclerAdapter(this, notes);
         recyclerNotes.setAdapter(mAdapter);
-
-//        listNotes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent intent = new Intent(NoteListAcitivity.this, NoteActivity.class);
-//                intent.putExtra(NoteActivity.NOTE_POSITION, position);
-//
-//                startActivity(intent);
-//            }
-//        });
     }
 
 }
