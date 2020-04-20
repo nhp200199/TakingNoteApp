@@ -97,6 +97,7 @@ public class NoteActivity extends AppCompatActivity {
             case R.id.action_cancel:
                 mIsCancelling = true;
                 finish();
+                return true;
             case R.id.action_next:
                 moveNext();
                 return true;
