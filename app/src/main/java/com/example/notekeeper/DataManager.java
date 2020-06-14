@@ -192,7 +192,7 @@ public class DataManager {
         course.getModule("java_core_m03").setComplete(true);
         mNotes.add(new NoteInfo(course, "Compiler options",
                 "The -jar option isn't compatible with with the -cp option"));
-        mNotes.add(new NoteInfo(course, "Serialization",
+        mNotes.add(new NoteInfo(course,  "Serialization",
                 "Remember to include SerialVersionUID to assure version compatibility"));
     }
 
