@@ -41,10 +41,13 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
         mIdPos = mCursor.getColumnIndex(NoteInfoEntry._ID);
     }
 
-    public void changeCusor(Cursor cursor){
-        if(mCursor != null)
-            mCursor.close();
-        mCursor = cursor;
+    public void changeCusor(Cursor newCusor){
+        Cursor oldCusor = mCursor;
+        if(mCursor == newCusor)
+            return;
+        mCursor = newCusor;
+        if(oldCusor !=null)
+            oldCusor.close();
         populateColumnPosition();
         notifyDataSetChanged();
     }
