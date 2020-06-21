@@ -52,7 +52,7 @@ public class NoteListAcitivity extends AppCompatActivity {
 
 
         List<NoteInfo> notes = DataManager.getInstance().getNotes();
-        mAdapter = new NoteRecyclerAdapter(this, notes);
+        mAdapter = new NoteRecyclerAdapter(this, null);
         recyclerNotes.setAdapter(mAdapter);
     }
 

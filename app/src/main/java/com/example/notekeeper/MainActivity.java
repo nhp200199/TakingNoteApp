@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.notekeeper.NoteKeeperDatabaseContract.CourseInfoEntry;
 import com.example.notekeeper.NoteKeeperDatabaseContract.NoteInfoEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
+                //startActivity(new Intent(this, SettingsActivity.class));
                 return true;
 
             default:
@@ -201,11 +202,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public Cursor loadInBackground() {
                 SQLiteDatabase db = mDbOpoenHelper.getReadableDatabase();
                 final String[] noteColumns = {
+                        NoteInfoEntry.getQName(NoteInfoEntry._ID),
                         NoteInfoEntry.COLUMN_NOTE_TITLE,
-                        NoteInfoEntry.COLUMN_COURSE_ID,
-                        NoteInfoEntry._ID};
-                String noteOrderBy = NoteInfoEntry.COLUMN_COURSE_ID + ", " + NoteInfoEntry.COLUMN_NOTE_TITLE;
-                return db.query(NoteInfoEntry.TABLE_NAME, noteColumns,
+                        CourseInfoEntry.COLUMN_COURSE_TITLE};
+
+                String noteOrderBy = CourseInfoEntry.COLUMN_COURSE_TITLE + ", " +
+                                    NoteInfoEntry.COLUMN_NOTE_TITLE;
+
+                String tablesWithJoin = NoteInfoEntry.TABLE_NAME + " JOIN "+
+                        CourseInfoEntry.TABLE_NAME + " ON "  +
+                        NoteInfoEntry.getQName(NoteInfoEntry.COLUMN_COURSE_ID) +  " = " +
+                        CourseInfoEntry.getQName(NoteInfoEntry.COLUMN_COURSE_ID);
+
+                return db.query(tablesWithJoin, noteColumns,
                         null, null, null, null, noteOrderBy);
             }
         };
