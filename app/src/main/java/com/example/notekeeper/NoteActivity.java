@@ -406,4 +406,10 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
             mAdapterCourses.changeCursor(null);
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        mIsCancelling = true;
+        super.onBackPressed();
+    }
 }
