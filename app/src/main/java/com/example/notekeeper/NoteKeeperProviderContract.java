@@ -17,7 +17,7 @@ public final class NoteKeeperProviderContract {
     }
     protected interface NotesColumns{
         public static final String COLUMN_NOTE_TITLE = "note_title";
-        public static final String COLUMN_NOTE_TEXT = "note_title";
+        public static final String COLUMN_NOTE_TEXT = "note_text";
     }
 
     public static final class Courses implements BaseColumns, CourseIdColumns, CoursesColumns {
