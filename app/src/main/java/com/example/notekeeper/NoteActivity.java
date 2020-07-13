@@ -2,20 +2,29 @@ package com.example.notekeeper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,6 +62,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private boolean mCoursesQueryFinished;
     private boolean mNoteQueryFinished;
     private Uri mNoteUri;
+    private NotificationManagerCompat mManagerCompat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,11 +175,79 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
             case R.id.action_next:
                 moveNext();
                 return true;
-
+            case R.id.action_set_reminder:
+                showReminderNotification();
             default:
                 return super.onOptionsItemSelected(item);
         }
 
+    }
+
+    private void showReminderNotification() {
+        String noteText = mEdtNoteText.getText().toString();
+        String noteTitle = mEdtNoteTitle.getText().toString();
+        mManagerCompat =NotificationManagerCompat.from(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mManagerCompat.notify(NoteReminderNotification.NOTIFICATION_TAG, 0, createNotification(noteTitle, noteText));
+        } //else  mManagerCompat.notify(0, createNotification(noteTitle, noteText));
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private Notification createNotification(String noteTitle, String noteText) {
+        Intent noteActivityIntent = new Intent(getApplicationContext(), NoteActivity.class);
+        noteActivityIntent.putExtra(NoteActivity.NOTE_ID, mNoteId);
+        final Resources res = getApplicationContext().getResources();
+
+        // This image is used as the notification's large icon (thumbnail).
+        // TODO: Remove this if your notification has no relevant thumbnail.
+        final Bitmap picture = BitmapFactory.decodeResource(res, R.drawable.logo);
+        Notification.Builder builder = new Notification.Builder(this, NoteReminderNotification.NOTIFICATION_TAG)
+                // Set appropriate defaults for the notification light, sound,
+                // and vibration.
+                .setDefaults(Notification.DEFAULT_ALL)
+
+                // Set required fields, including the small icon, the
+                // notification title, and text.
+                .setSmallIcon(R.drawable.ic_stat_note_reminder)
+                .setContentTitle(noteTitle)
+                .setContentText(noteText)
+
+                // All fields below this line are optional.
+
+                // Use a default priority (recognized on devices running Android
+                // 4.1 or later)
+                .setPriority(Notification.PRIORITY_DEFAULT)
+
+                // Provide a large icon, shown with the notification in the
+                // notification drawer on devices running Android 3.0 or later.
+                .setLargeIcon(picture)
+
+                // Set ticker text (preview) information for this notification.
+                .setTicker(noteTitle)
+
+                .setStyle(new Notification.BigTextStyle()
+                        .bigText(noteText)
+                        .setBigContentTitle(noteTitle)
+                        .setSummaryText("Review note"))
+                .setContentIntent(PendingIntent.getActivity(
+                        this,
+                        0,
+                        noteActivityIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                ))
+                .addAction(new Notification.Action(
+                        0,
+                        "View all notes",
+                        PendingIntent.getActivity(
+                                getApplicationContext(),
+                                0,
+                                new Intent(getApplicationContext(), MainActivity.class),
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                ))
+                // Automatically dismiss the notification when it is touched.
+                .setAutoCancel(true);;
+        return builder.build();
     }
 
     private void moveNext() {

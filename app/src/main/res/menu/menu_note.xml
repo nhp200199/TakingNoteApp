@@ -6,6 +6,9 @@
         android:id="@+id/action_send_mail"
         android:title="Send Mail" />
     <item
+        android:id="@+id/action_set_reminder"
+        android:title="Set Reminder" />
+    <item
         android:id="@+id/action_next"
         android:icon="@android:drawable/ic_media_next"
         android:title="Next"
