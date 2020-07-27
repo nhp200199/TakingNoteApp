@@ -100,11 +100,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.action_settings:
                 //startActivity(new Intent(this, SettingsActivity.class));
                 return true;
-
+            case R.id.action_backup_notes:
+                backupNotes();
             default:
                 return super.onOptionsItemSelected(item);
         }
 
+    }
+
+    private void backupNotes() {
+        //NoteBackup.doBackup(this, NoteBackup.ALL_COURSES);
+
+        Intent intent = new Intent(MainActivity.this, NoteBackupService.class);
+        intent.putExtra(NoteBackupService.EXTRA_COURSE_ID, NoteBackup.ALL_COURSES);
+        startService(intent);
     }
 
     @Override

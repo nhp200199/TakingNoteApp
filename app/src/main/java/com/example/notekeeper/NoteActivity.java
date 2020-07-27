@@ -201,6 +201,9 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         noteActivityIntent.putExtra(NoteActivity.NOTE_ID, mNoteId);
         final Resources res = getApplicationContext().getResources();
 
+        Intent noteBackupService = new Intent(getApplicationContext(), NoteBackupService.class);
+        noteBackupService.putExtra(NoteBackupService.EXTRA_COURSE_ID, NoteBackup.ALL_COURSES);
+
         // This image is used as the notification's large icon (thumbnail).
         // TODO: Remove this if your notification has no relevant thumbnail.
         final Bitmap picture = BitmapFactory.decodeResource(res, R.drawable.logo);
@@ -245,6 +248,16 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
                                 getApplicationContext(),
                                 0,
                                 new Intent(getApplicationContext(), MainActivity.class),
+                                PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                ))
+                .addAction(new Notification.Action(
+                        0,
+                        "Backup Notes",
+                        PendingIntent.getService(
+                                getApplicationContext(),
+                                0,
+                                noteBackupService,
                                 PendingIntent.FLAG_UPDATE_CURRENT
                         )
                 ))

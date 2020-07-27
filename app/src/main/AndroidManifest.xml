@@ -12,11 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <service
+            android:name=".NoteBackupService"
+            android:exported="false"></service>
+
         <provider
             android:name=".NoteKeeperProvider"
             android:authorities="com.example.notekeeper.provider"
             android:enabled="true"
-            android:exported="true"></provider>
+            android:exported="true" />
 
         <activity android:name=".MainActivity">
             <intent-filter>
