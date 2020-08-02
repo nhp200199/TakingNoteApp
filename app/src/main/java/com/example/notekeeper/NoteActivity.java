@@ -537,4 +537,14 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         mIsCancelling = false;
         super.onBackPressed();
     }
+
+    @Override
+    protected void onStop() {
+        //loader có thể lưu lại dữ liệu cho ta
+        //khi ctrinh chaỵ vào onStart  lại thì loader đã gọi lại hàm onFinished(), trong đó có hàm moveToNext() đứng đó sẽ làm loader tiến thêm 1 bước => lỗi
+        mNoteQueryFinished = false;
+        mCoursesQueryFinished = false;
+        mNoteCusor.moveToPrevious();
+        super.onStop();
+    }
 }
