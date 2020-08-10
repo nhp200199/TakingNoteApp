@@ -12,12 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <receiver
+            android:name=".NoteReminderReceiver"
+            android:enabled="true"
+            android:exported="true"></receiver>
+
         <service
             android:name=".NoteUploaderService"
             android:enabled="true"
             android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE">
-        </service>
+            android:permission="android.permission.BIND_JOB_SERVICE"></service>
         <service
             android:name=".NoteBackupService"
             android:exported="false" />

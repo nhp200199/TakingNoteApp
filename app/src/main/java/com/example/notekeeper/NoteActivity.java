@@ -12,6 +12,7 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ContentUris;
@@ -26,6 +27,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -189,13 +191,24 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private void showReminderNotification() {
         String noteText = mEdtNoteText.getText().toString();
         String noteTitle = mEdtNoteTitle.getText().toString();
-        mManagerCompat =NotificationManagerCompat.from(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mManagerCompat.notify(NoteReminderNotification.NOTIFICATION_TAG, 0, createNotification(noteTitle, noteText));
-        } //else  mManagerCompat.notify(0, createNotification(noteTitle, noteText));
+        int noteId = (int)ContentUris.parseId(mNoteUri);
+
+        Intent intent = new Intent(this, NoteReminderReceiver.class);
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_TITLE, noteTitle);
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_TEXT, noteText);
+        intent.putExtra(NoteReminderReceiver.EXTRA_NOTE_ID, noteId);
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+
+        long currentTimeInMilliseconds = SystemClock.elapsedRealtime();
+        long TEN_SECONDS = 10 * 1000;
+
+        long alarmTime = currentTimeInMilliseconds + TEN_SECONDS;
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME, alarmTime, pendingIntent);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private Notification createNotification(String noteTitle, String noteText) {
         Intent noteActivityIntent = new Intent(getApplicationContext(), NoteActivity.class);
         noteActivityIntent.putExtra(NoteActivity.NOTE_ID, mNoteId);
@@ -207,7 +220,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         // This image is used as the notification's large icon (thumbnail).
         // TODO: Remove this if your notification has no relevant thumbnail.
         final Bitmap picture = BitmapFactory.decodeResource(res, R.drawable.logo);
-        Notification.Builder builder = new Notification.Builder(this, NoteReminderNotification.NOTIFICATION_TAG)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NoteReminderNotification.NOTIFICATION_TAG)
                 // Set appropriate defaults for the notification light, sound,
                 // and vibration.
                 .setDefaults(Notification.DEFAULT_ALL)
@@ -231,38 +244,37 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
                 // Set ticker text (preview) information for this notification.
                 .setTicker(noteTitle)
 
-                .setStyle(new Notification.BigTextStyle()
-                        .bigText(noteText)
-                        .setBigContentTitle(noteTitle)
-                        .setSummaryText("Review note"))
+                .setStyle(new NotificationCompat.BigTextStyle()
+                            .bigText(noteText)
+                            .setBigContentTitle(noteTitle)
+                            .setSummaryText("Review note"))
                 .setContentIntent(PendingIntent.getActivity(
                         this,
                         0,
                         noteActivityIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT
                 ))
-                .addAction(new Notification.Action(
+                .addAction(new NotificationCompat.Action(
                         0,
                         "View all notes",
                         PendingIntent.getActivity(
                                 getApplicationContext(),
                                 0,
                                 new Intent(getApplicationContext(), MainActivity.class),
-                                PendingIntent.FLAG_UPDATE_CURRENT
-                        )
-                ))
-                .addAction(new Notification.Action(
+                                PendingIntent.FLAG_UPDATE_CURRENT)))
+                .addAction(new NotificationCompat.Action(
                         0,
                         "Backup Notes",
                         PendingIntent.getService(
                                 getApplicationContext(),
                                 0,
                                 noteBackupService,
-                                PendingIntent.FLAG_UPDATE_CURRENT
+                                PendingIntent.FLAG_UPDATE_CURRENT)
                         )
-                ))
+                )
                 // Automatically dismiss the notification when it is touched.
                 .setAutoCancel(true);;
+
         return builder.build();
     }
 
@@ -286,6 +298,8 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
         mSpCourses.setSelection(courseIndex);
         mEdtNoteTitle.setText(noteTitle);
         mEdtNoteText.setText(noteText);
+
+        CourseEventBroadcastHelper.sendEventBroadcast(this, courseId, noteTitle);
     }
 
     private int getIndexOfCourseId(String courseId) {

@@ -11,6 +11,7 @@ public class NoteReminderNotification extends Application {
     /**
      * The unique identifier for this type of notification.
      */
+    //Id of the notification channel
     public static final String NOTIFICATION_TAG = "NoteReminder";
 
     @Override
@@ -21,12 +22,14 @@ public class NoteReminderNotification extends Application {
     }
 
     private void createNotificationChannels() {
+        //check if the version is 26 or above. This is important because older versions dont have notification channel
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             NotificationChannel noteReminderNotiChannel = new NotificationChannel(
                     NOTIFICATION_TAG,
                     "Note Reminder",
                     NotificationManager.IMPORTANCE_DEFAULT
             );
+            //setDescription for user to know what this channel is about (this is shown in the Setting)
             noteReminderNotiChannel.setDescription("This is a reminder");
             NotificationManager manager = getSystemService(NotificationManager.class);
 
