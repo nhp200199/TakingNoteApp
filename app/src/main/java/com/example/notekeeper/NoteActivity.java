@@ -107,7 +107,6 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if(!mIsNewNote)
             getSupportLoaderManager().initLoader(LOADER_NOTES, null, this);
-
     }
 
     private void loadCourseData() {

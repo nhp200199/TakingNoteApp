@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NoteKeeper</string>
+    <string name="note_title_hint" translatable="false">Tiêu đề</string>
+    <string name="note_text_hint" translatable="false">Văn bản</string>
+</resources>
