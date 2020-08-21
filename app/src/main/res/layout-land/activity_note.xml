@@ -75,5 +75,15 @@
         android:orientation="vertical"
         app:layout_constraintGuide_begin="382dp" />
 
+    <com.example.notekeeper.ModuleStatusView
+        android:id="@+id/module_status"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:padding="5dp"
+        app:layout_constraintEnd_toEndOf="@+id/edt_title"
+        app:layout_constraintStart_toStartOf="@+id/edt_title"
+        app:layout_constraintTop_toBottomOf="@+id/edt_title" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

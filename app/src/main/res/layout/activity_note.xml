@@ -2,13 +2,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/module_status"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".NoteActivity">
 
     <include
         android:id="@+id/toolbar"
-        layout="@layout/toolbar_main"/>
+        layout="@layout/toolbar_main" />
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -65,6 +66,17 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/edt_title"
         app:layout_constraintTop_toBottomOf="@+id/edt_title" />
+
+    <com.example.notekeeper.ModuleStatusView
+        android:id="@+id/moduleStatusView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:padding="5dp"
+        app:layout_constraintEnd_toEndOf="@+id/edt_note"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/edt_note"
+        app:layout_constraintTop_toBottomOf="@+id/edt_note" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

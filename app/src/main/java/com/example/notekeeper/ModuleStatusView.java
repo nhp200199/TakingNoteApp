@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -31,6 +32,7 @@ public class ModuleStatusView extends View {
     private int mFillColor;
     private Paint mPaintFill;
     private float mRadius;
+    private int mMaxHorizontalModules;
 
     public ModuleStatusView(Context context) {
         super(context);
@@ -62,7 +64,6 @@ public class ModuleStatusView extends View {
         mShapeSize = 144f;
         mSpacing = 30f;
         mRadius = (mShapeSize - mOutlineWidth) / 2;
-        setupModuleRectangles();
 
         mOutlineColor = Color.BLACK;
         mPaintOutline = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -85,13 +86,53 @@ public class ModuleStatusView extends View {
         setModuleStatus(exampleModuleValues);
     }
 
-    private void setupModuleRectangles() {
+    private void setupModuleRectangles(int width) {
+        int availableWidth = width - getPaddingRight() - getPaddingLeft();
+        int horizontalModulesThatCanFit = (int) (availableWidth / (mShapeSize + mSpacing));
+        int maxHorizontalModules = Math.min(horizontalModulesThatCanFit, mModuleStatus.length);
+
         mModuleRectangles = new Rect[mModuleStatus.length];
         for(int moduleIndex=0; moduleIndex < mModuleRectangles.length; moduleIndex++){
-            int x = (int) ((mShapeSize + mSpacing) * moduleIndex);
-            int y = 0;
+            int coloumn = moduleIndex % maxHorizontalModules;
+            int row = moduleIndex / maxHorizontalModules;
+            int x = getPaddingLeft() + (int) ((mShapeSize + mSpacing) * coloumn);
+            int y = getPaddingTop() + (int) ((mShapeSize + mSpacing) * row);
             mModuleRectangles[moduleIndex] = new Rect(x, y, x + (int) mShapeSize, y + (int) mShapeSize);
         }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        //tính kích thước cơ bản cho view (dùng cho việc wrapContent)
+        //trong hàm này cũng nên làm gọn để tăng hiệu suất vì nó có thể được gọi thường xuyên
+        int desireWidth = 0;
+        int desireHeight = 0;
+
+        int specWidth = MeasureSpec.getSize(widthMeasureSpec);
+        int availableWidth = specWidth - getPaddingRight() - getPaddingLeft();
+        int horizontalModulesThatCanFit = (int) (availableWidth / (mShapeSize + mSpacing));
+        mMaxHorizontalModules = Math.min(horizontalModulesThatCanFit, mModuleStatus.length);
+
+        int rows = (mModuleStatus.length - 1) / mMaxHorizontalModules + 1;
+        //Có thể dùng phép tính round up để tính số row cần
+        //int rows = Math.(mModuleStatus.length / mMaxHorizontalModules);
+
+        desireWidth = (int) (((mShapeSize + mSpacing) * mMaxHorizontalModules) - mSpacing);
+        desireWidth += getPaddingLeft() + getPaddingRight();
+
+        desireHeight = (int) ((mShapeSize + mSpacing) * rows - mSpacing);
+        desireHeight += getPaddingTop() + getPaddingBottom();
+
+        int width = resolveSizeAndState(desireWidth, widthMeasureSpec, 0 );
+        int height = resolveSizeAndState(desireHeight, heightMeasureSpec, 0 );
+        Log.d("Tag", String.valueOf(width));
+
+        setMeasuredDimension(width, height);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        setupModuleRectangles(w);
     }
 
     @Override
