@@ -105,6 +105,8 @@ public class ModuleStatusView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         //tính kích thước cơ bản cho view (dùng cho việc wrapContent)
         //trong hàm này cũng nên làm gọn để tăng hiệu suất vì nó có thể được gọi thường xuyên
+        //vì vậy trong hàm này chỉ tính width và height cho nguyên một cái custom view, việc đặt các
+        //view cụ thể sẽ được hàm onSizeChanged thực hiện
         int desireWidth = 0;
         int desireHeight = 0;
 
