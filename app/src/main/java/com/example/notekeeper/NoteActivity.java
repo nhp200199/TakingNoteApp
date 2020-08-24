@@ -68,6 +68,7 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     private boolean mNoteQueryFinished;
     private Uri mNoteUri;
     private NotificationManagerCompat mManagerCompat;
+    private ModuleStatusView mViewModuleStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +108,21 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if(!mIsNewNote)
             getSupportLoaderManager().initLoader(LOADER_NOTES, null, this);
+
+        mViewModuleStatus = (ModuleStatusView) findViewById(R.id.moduleStatusView);
+        loadModuleStatusValues();
+    }
+
+    private void loadModuleStatusValues() {
+        //
+        int totalNumberOfModules = 11;
+        int completeNumberOfModules = 7;
+
+        boolean[] moduleStatus = new boolean[totalNumberOfModules];
+        for (int i = 0; i < completeNumberOfModules; i++){
+            moduleStatus[i] = true;
+        }
+        mViewModuleStatus.setModuleStatus(moduleStatus);
     }
 
     private void loadCourseData() {

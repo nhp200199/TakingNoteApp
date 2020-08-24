@@ -76,7 +76,7 @@
         app:layout_constraintGuide_begin="382dp" />
 
     <com.example.notekeeper.ModuleStatusView
-        android:id="@+id/module_status"
+        android:id="@+id/moduleStatusView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"

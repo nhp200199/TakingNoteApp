@@ -9,7 +9,9 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -17,6 +19,10 @@ import android.view.View;
  */
 public class ModuleStatusView extends View {
     public static final int EDIT_MODE_MODULE_COUNT = 7;
+    public static final String TAG = "TAG";
+    public static final int INVALID_INDEX = -1;
+    public static final int SHAPE_CIRCLE = 0;
+    public static final int DEFAULT_OUTLINE_WIDTH_DP = 2;
     private String mExampleString; // TODO: use a default from R.string...
     private int mExampleColor = Color.RED; // TODO: use a default from R.color...
     private float mExampleDimension = 0; // TODO: use a default from R.dimen...
@@ -33,6 +39,7 @@ public class ModuleStatusView extends View {
     private Paint mPaintFill;
     private float mRadius;
     private int mMaxHorizontalModules;
+    private int mShape;
 
     public ModuleStatusView(Context context) {
         super(context);
@@ -51,21 +58,30 @@ public class ModuleStatusView extends View {
 
     private void init(AttributeSet attrs, int defStyle) {
         // Load attributes
+        // TypedArray giúp ta có thể sử dụng trực tiếp resource, còn AttributeSet sẽ trả về raw
+        // Ví dụ: resource là một nguồn reference thì nó lấy cái reference đó chứ không lấy thẳng giá trị
         final TypedArray a = getContext().obtainStyledAttributes(
                 attrs, R.styleable.ModuleStatusView, defStyle, 0);
 
+        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+        float displayDensity = dm.density;
+        float defaultOutlineWidthPixels = displayDensity * DEFAULT_OUTLINE_WIDTH_DP;
+
+        mOutlineColor = a.getColor(R.styleable.ModuleStatusView_outlineColor, Color.BLACK);
+        mShape = a.getInt(R.styleable.ModuleStatusView_shape, SHAPE_CIRCLE);
+        mOutlineWidth = a.getDimension(R.styleable.ModuleStatusView_outlineWidth, defaultOutlineWidthPixels);
         a.recycle();
 
         if(isInEditMode()){
             setupEditModeValues();
         }
 
-        mOutlineWidth = 6f;
+        // ở đây cũng nên chuyển các số đo về dạng dp, không nên để dưới dạng pixel vì sẽ làm hiển thị
+        // không đúng ở các màn hình khác nhau
         mShapeSize = 144f;
         mSpacing = 30f;
         mRadius = (mShapeSize - mOutlineWidth) / 2;
 
-        mOutlineColor = Color.BLACK;
         mPaintOutline = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaintOutline.setStyle(Paint.Style.STROKE);
         mPaintOutline.setStrokeWidth(mOutlineWidth);
@@ -127,7 +143,8 @@ public class ModuleStatusView extends View {
 
         int width = resolveSizeAndState(desireWidth, widthMeasureSpec, 0 );
         int height = resolveSizeAndState(desireHeight, heightMeasureSpec, 0 );
-        Log.d("Tag", String.valueOf(width));
+        Log.d(TAG, String.valueOf(width));
+        Log.d(TAG, "onMeasure");
 
         setMeasuredDimension(width, height);
     }
@@ -135,24 +152,69 @@ public class ModuleStatusView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         setupModuleRectangles(w);
+        Log.d(TAG, "size changed");
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        for (int moduleIndex=0; moduleIndex < mModuleRectangles.length; moduleIndex++){
-            //find the center point of the circle
-            float x = mModuleRectangles[moduleIndex].centerX();
-            float y = mModuleRectangles[moduleIndex].centerY();
-            //the radius is the same in every circle, we shouldn't recalculate it (remember to simplify the word in onDraw)
-            //float radius = (mShapeSize - mOutlineWidth) / 2;
+        for (int moduleIndex=0; moduleIndex < mModuleRectangles.length; moduleIndex++) {
+            if (mShape == SHAPE_CIRCLE) {
+                //find the center point of the circle
+                float x = mModuleRectangles[moduleIndex].centerX();
+                float y = mModuleRectangles[moduleIndex].centerY();
+                //the radius is the same in every circle, we shouldn't recalculate it (remember to simplify the word in onDraw)
+                //float radius = (mShapeSize - mOutlineWidth) / 2;
 
-            //draw the circle
-            if(mModuleStatus[moduleIndex]){
-                canvas.drawCircle(x, y, mRadius, mPaintFill);
+                //draw the circle
+                if (mModuleStatus[moduleIndex]) {
+                    canvas.drawCircle(x, y, mRadius, mPaintFill);
+                }
+                canvas.drawCircle(x, y, mRadius, mPaintOutline);
             }
-            canvas.drawCircle(x, y, mRadius, mPaintOutline);
+            else{
+                //draw square
+                drawSquare(canvas, moduleIndex);
+            }
         }
+    }
+
+    private void drawSquare(Canvas canvas, int moduleIndex) {
+        if(mModuleStatus[moduleIndex])
+            canvas.drawRect(mModuleRectangles[moduleIndex], mPaintFill);
+        canvas.drawRect(mModuleRectangles[moduleIndex], mPaintOutline);
+    }
+
+    @Override
+    public boolean onTouchEvent (MotionEvent event){
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                return true;
+            case MotionEvent.ACTION_UP:
+                int moduleIndex = findItemAtPoint(event.getX(), event.getY());
+                onModuleSelected(moduleIndex);
+                return true;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private void onModuleSelected(int moduleIndex) {
+        if(moduleIndex == INVALID_INDEX)
+            return;
+
+        mModuleStatus[moduleIndex] = !mModuleStatus[moduleIndex];
+        invalidate(); // đọc doc của cái này nha
+    }
+
+    private int findItemAtPoint(float x, float y) {
+        int moduleIndex = INVALID_INDEX;
+        for(int i = 0; i < mModuleRectangles.length; i++){
+            if(mModuleRectangles[i].contains((int)x, (int)y)) {
+                moduleIndex = i;
+                break;
+            }
+        }
+        return moduleIndex;
     }
 
     public boolean[] getModuleStatus() {
