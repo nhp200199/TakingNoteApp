@@ -32,7 +32,15 @@ This is an Andrdoid app that I made based on the instructions of a Pluralsight c
    - -Broadcast Receivers: a way that your app can receive broadcast from system events or receive from / send to other apps.
    - -Alarm Manager: used to schedule time-sensitive task (often used in conjunction with broadcast receivers).
 7. **Broadening Android App Appeal and Reach**
+   - -Broaden our app to users through localization
+   - -Manage view through different situation of changes
+   - -Create a brand new custom view
+   - -Perform accessibility for people
 ## Beyonds the course
 In addition to the things that is wrapped in the course, here is things that I plan to do (there is some I did, some is just a plan that to archieve):
-1. Complete the things left on the course's app
-   
+1. Complete the things left on the course's app and custom the view I interest.
+2. Performing deletion on the note and the course.
+6. Share the note
+3. Complete the setting screen
+4. Create a filter for the note, course
+5. Using Room to work with database
