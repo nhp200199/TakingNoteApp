@@ -1,6 +1,7 @@
 package com.example.notekeeper;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,16 +13,46 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
+import static com.example.notekeeper.NoteKeeperDatabaseContract.*;
+
 class CourseRecyclerAdapter extends RecyclerView.Adapter<CourseRecyclerAdapter.ViewHolder> {
 
     private final Context mContext;
-    private final List<CourseInfo> mCourses;
+    private List<CourseInfo> mCourses;
     private final LayoutInflater mLayoutInflater;
 
-    public CourseRecyclerAdapter(Context context, List<CourseInfo> courses) {
+    private Cursor mCursor;
+    private int mCourseTitlePos;
+    private int mId;
+
+    public CourseRecyclerAdapter(Context context, Cursor cursor) {
         mContext = context;
-        mCourses = courses;
+        mCursor = cursor;
         mLayoutInflater = LayoutInflater.from(mContext);
+    }
+
+    private void populateColumnPosition() {
+        if(mCursor == null)
+            return;
+
+        //get column indexes from mCursor
+        mCourseTitlePos = mCursor.getColumnIndex(CourseInfoEntry.COLUMN_COURSE_TITLE);
+        mId = mCursor.getColumnIndex(CourseInfoEntry._ID);
+    }
+
+    public void changeCusor(Cursor newCusor){
+        /*the mean of this function is compare the new cursor with the old cursor
+        if the new cursor has new value (different than the old cursor), if true assign the
+        old cursor with the new one and then delete the old one*/
+        Cursor oldCusor = mCursor;
+        if(mCursor == newCusor)
+            return;
+        mCursor = newCusor;
+        if(oldCusor !=null)
+            oldCusor.close();
+        populateColumnPosition();
+        //thông báo dữ liệu trong recycler view đã thay đổi
+        notifyDataSetChanged();
     }
 
     @Override
@@ -32,20 +63,23 @@ class CourseRecyclerAdapter extends RecyclerView.Adapter<CourseRecyclerAdapter.V
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        CourseInfo course = mCourses.get(position);
-        holder.mTextCourse.setText(course.getTitle());
-        holder.mCurrentPosition = position;
+        mCursor.moveToPosition(position);
+        String courseTitle = mCursor.getString(mCourseTitlePos);
+        int id = mCursor.getInt(mId);
+
+        holder.mTextCourse.setText(courseTitle);
+        holder._id = id;
     }
 
     @Override
     public int getItemCount() {
-        return mCourses.size();
+        return mCursor == null? 0 : mCursor.getCount();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         public final TextView mTextCourse;
-        public int mCurrentPosition;
+        public int _id;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -54,7 +88,7 @@ class CourseRecyclerAdapter extends RecyclerView.Adapter<CourseRecyclerAdapter.V
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Snackbar.make(v, mCourses.get(mCurrentPosition).getTitle(),
+                    Snackbar.make(v, mCourses.get(_id).getTitle(),
                             Snackbar.LENGTH_LONG).show();
 
                 }

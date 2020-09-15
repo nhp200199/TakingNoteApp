@@ -36,11 +36,14 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
+import static com.example.notekeeper.NoteKeeperProviderContract.*;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
         LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int LOADER_NOTES = 0;
     public static final int NOTE_UPLOADER_JOB_ID = 1;
+    public static final int LOADER_COURSES = 1;
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
     private RecyclerView mRecyclerItems;
     private LinearLayoutManager mNotesLayoutManager;
@@ -59,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         enableStrictMode();
 
         mDbOpoenHelper = new NoteKeeperOpenHelper(this);
+        getSupportLoaderManager().initLoader(LOADER_COURSES, null, this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -82,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void enableStrictMode() {
-        if(BuildConfig.DEBUG){
+        if (BuildConfig.DEBUG) {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                     .detectAll()
                     .penaltyLog()
@@ -99,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_settings:
                 //startActivity(new Intent(this, SettingsActivity.class));
                 return true;
@@ -118,10 +122,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         extras.putString(NoteUploaderService.EXTRA_DATA_URI, Notes.CONTENT_URI.toString());
 
         ComponentName componentName = new ComponentName(this, NoteUploaderService.class);
-        JobInfo jobInfo =new JobInfo.Builder(NOTE_UPLOADER_JOB_ID, componentName)
-                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                        .setExtras(extras)
-                        .build();
+        JobInfo jobInfo = new JobInfo.Builder(NOTE_UPLOADER_JOB_ID, componentName)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setExtras(extras)
+                .build();
 
         JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
         jobScheduler.schedule(jobInfo);
@@ -156,11 +160,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    protected  void onResume(){
+    protected void onResume() {
         super.onResume();
         getSupportLoaderManager().restartLoader(LOADER_NOTES, null, this);
 
-        openDrawer();
     }
 
     private void openDrawer() {
@@ -169,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                DrawerLayout drawer = (DrawerLayout)findViewById(R.id.drawer_layout);
+                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
                 drawer.openDrawer(GravityCompat.START);
             }
         }, 1000);
@@ -191,15 +194,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void connectViews() {
         DataManager.loadFromDatabase(mDbOpoenHelper);
-        mRecyclerItems  = findViewById(R.id.list_items);
+        mRecyclerItems = findViewById(R.id.list_items);
         mNotesLayoutManager = new LinearLayoutManager(this);
         mCoursesLayoutManager = new GridLayoutManager(this, getResources().getInteger(R.integer.course_grid_span));
-
 
         mNoteRecyclerAdapter = new NoteRecyclerAdapter(this, null);
 
         List<CourseInfo> courses = DataManager.getInstance().getCourses();
-        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, courses);
+        mCourseRecyclerAdapter = new CourseRecyclerAdapter(this, null);
 
         displayNotes();
     }
@@ -249,9 +251,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
         CursorLoader loader = null;
-        if(id == LOADER_NOTES)
-            loader = createLoaderNotes();
+        switch (id) {
+            case LOADER_NOTES:
+                loader = createLoaderNotes();
+                break;
+            case LOADER_COURSES:
+                loader = createLoaderCourses();
+                break;
+        }
         return loader;
+    }
+
+    private CursorLoader createLoaderCourses() {
+        final String[] courseColumn = {
+                Courses._ID,
+                Courses.COLUMN_COURSE_TITLE,
+        };
+
+        String courseOrderBy = Courses.COLUMN_COURSE_TITLE;
+        return new CursorLoader(this, Courses.CONTENT_URI, courseColumn,
+                null, null, courseOrderBy);
     }
 
     private CursorLoader createLoaderNotes() {
@@ -268,13 +287,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        if(loader.getId() == LOADER_NOTES)
-            mNoteRecyclerAdapter.changeCusor(data);
+        switch (loader.getId()){
+            case LOADER_NOTES:
+                mNoteRecyclerAdapter.changeCusor(data);
+                break;
+            case LOADER_COURSES:
+                mCourseRecyclerAdapter.changeCusor(data);
+        }
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-        if(loader.getId() == LOADER_NOTES)
+        if (loader.getId() == LOADER_NOTES)
             mNoteRecyclerAdapter.changeCusor(null);
+        else if(loader.getId() == LOADER_COURSES)
+            mCourseRecyclerAdapter.changeCusor(null);
     }
 }

@@ -50,6 +50,7 @@ public class NoteRecyclerAdapter extends RecyclerView.Adapter<NoteRecyclerAdapte
         if(oldCusor !=null)
             oldCusor.close();
         populateColumnPosition();
+        //thông báo dữ liệu trong recycler view đã thay đổi
         notifyDataSetChanged();
     }
 
